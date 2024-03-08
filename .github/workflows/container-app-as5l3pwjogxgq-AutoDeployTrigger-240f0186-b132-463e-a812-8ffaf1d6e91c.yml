@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-as5l3pwjogxgq
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/container-app-as5l3pwjogxgq-AutoDeployTrigger-240f0186-b132-463e-a812-8ffaf1d6e91c.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPAS5L3PWJOGXGQ_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPAS5L3PWJOGXGQ_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPAS5L3PWJOGXGQ_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistryas5l3pwjogxgq.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPAS5L3PWJOGXGQ_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPAS5L3PWJOGXGQ_REGISTRY_PASSWORD }}
+          containerAppName: container-app-as5l3pwjogxgq
+          resourceGroup: azureflaskmysqlflexibleacawithdockerfile98e8
+          imageToBuild: containerregistryas5l3pwjogxgq.azurecr.io/container-app-as5l3pwjogxgq:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
